@@ -7,7 +7,7 @@
 
 #define FRAMEMAX 6
 #define FRAMEMIN 3
-#define REFPAGEMAX 30
+#define REFPAGEMAX 60
 #define REFPAGEMIN 20
 
 int n = 0;
@@ -82,7 +82,7 @@ int main(){
             printf("\nThere are %d page faults in this page replacement process.", LeastRecentlyUsed());
             break;
         case 4:         //Compare results between algorithms
-            printf("\nComparison: Optimal: %d LRU: %d", OptimalPageReplacement(), LeastRecentlyUsed());
+            printf("\nComparison: FIFO: %d Optimal: %d LRU: %d", FirstInFirstOut(), OptimalPageReplacement(), LeastRecentlyUsed());
             break;
         default:
             printf("Error?");
@@ -94,15 +94,23 @@ int main(){
 int FirstInFirstOut(){
     ClearFrames();
     int nextIndex = 0;
-    int steps = -1;
+    int steps = 1;
     for (int i = 0; i < refpSize; i++){
+        int pageVal = *(refp + i);
         if (nextIndex > n - 1){ //reset index
             nextIndex = 0;
         }
-        *(frame + nextIndex) = *(refp + i);
-        PrintStep(steps, nextIndex);
-        steps++;
-        nextIndex++;
+        if (FindIn(frame, 0, n, pageVal) != -1)
+        {
+            //page value is found in frame, skip current RefPage
+        }
+        else
+        {
+            *(frame + nextIndex) = pageVal;
+            PrintStep(steps, nextIndex);
+            steps++;
+            nextIndex++;
+        }
     }
     return steps - 1;
 }
@@ -159,7 +167,7 @@ int OptimalPageReplacement(){
                     frameIndex = rand() % (n - 1);
                 }
 
-                *(frame + frameIndex) = *(refp + i);
+                *(frame + frameIndex) = *(refp + i); //assign value of i-th element of refp to frame
                 PrintStep(steps, frameIndex);
                 steps++;
                 longestDistance = 0; //reset
@@ -184,9 +192,10 @@ int LeastRecentlyUsed()
     for (int i = 0; i < refpSize; i++){
         PrintAge(age);
         int pageVal = *(refp + i);
-        if (FindIn(frame, 0, n, pageVal) != -1)
+        if (FindIn(frame, 0, n, pageVal) != -1) //if pageVal is in frame
         {
-            //page value is found in frame, skip current RefPage
+            //page value is found in frame, skip current RefPage, reset age of frame containting pageVal
+            *(age + FindIn(frame,0, n, pageVal)) = -1;
         }
         else if (FindIn(frame, 0, n, -1) != -1) //if empty frame is available
         {
@@ -196,7 +205,7 @@ int LeastRecentlyUsed()
             PrintStep(steps, frameIndex);
             steps++;
         }
-        else
+        else    //if not found
         {
             int oldest = 0;
             for (int z = 0; z < n; z++) //find the oldest frame
@@ -234,7 +243,7 @@ int FindIn(int *ptr, int from, int to, int val){    //iterate through an array "
 
 void PrintStep(int steps, int change){  //Print step in correct format and highlight the page that is being swapped
     printf("Step %d:  ", steps);
-    for (int i = 0; i < n; i++){
+    for (int i = 0; i < n; i++){        //Color changing for easy visualisation
         if (i == change){
             printf("\033[1;31m");
         }
@@ -251,7 +260,7 @@ void PrintStep(int steps, int change){  //Print step in correct format and highl
     printf("\033[0m\n");
 }
 
-void PrintAge(int *age)     //Print age of each frame in correct format
+void PrintAge(int *age)     //Print age of each frame in Age: x x x format
 {
     printf("\033[0;34mAge:     ");
     for (int i = 0; i < n; i++)
@@ -296,7 +305,7 @@ void InputPageNumber(){     //Let user input page reference numbers as a string 
     int choice = - 1;       
     do
     {
-        printf("\nWould you like to randomly generate page reference numbers?  1. Yes  2. No\n"); //Allow user to randomly generate numbers if they wish
+        printf("\nWould you like to randomly generate page reference numbers?  1. Yes  2. No\n"); //Allow user to randomly generate numbers if they wish for faster testing
         scanf("%d", &choice);
     } while (choice < 1 || choice > 2);
     if (choice == 2){
@@ -347,7 +356,7 @@ bool CheckValidInput(){     //Check if input is valid
     return true;
 }
 
-void ClearFrames(){         //Clear current frames to ensure reusability
+void ClearFrames(){         //Clear current frames for reusability
     for (int i = 0; i < n; i++)
     {
         *(frame + i) = -1;
