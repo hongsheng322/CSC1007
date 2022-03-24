@@ -18,6 +18,7 @@ char refbuff[REFPAGEMAX * 3];
 
 void InputPageNumber();
 bool CheckValidInput();
+int FirstInFirstOut();
 int OptimalPageReplacement();
 int LeastRecentlyUsed();
 void PrintStep(int steps, int change);
@@ -27,7 +28,7 @@ void ClearFrames();
 int FindIn(int *ptr, int from, int to, int val);
 
 int main(){
-    //Ask user to input number of frames and allocate memory accordingly
+    //Ask user to input number of frames (n) and allocate memory accordingly for frame
     do{
         printf("Enter number of frames: (%d-%d)\n", FRAMEMIN, FRAMEMAX);
         scanf("%d", &n);
@@ -41,7 +42,7 @@ int main(){
     ClearFrames();
     printf("Number of frames chosen: %d\n", n);
 
-    //Ask user to input number of reference page and allocate memory accordingly
+    //Ask user to input number of reference page  (refpSize) and allocate memory accordingly for refPage
     do
     {
         printf("\nEnter number of reference pages: (%d-%d)\n", REFPAGEMIN, REFPAGEMAX);
@@ -70,6 +71,7 @@ int main(){
     switch(mode){
         case 1:
             printf("Algorithm chosen: FIFO\n\n");
+            printf("\nThere are %d page faults in this page replacement process.", FirstInFirstOut());
             break;
         case 2:
             printf("Algorithm chosen: Optimal\n\n");
@@ -87,6 +89,22 @@ int main(){
     }
 
     return 0;
+}
+
+int FirstInFirstOut(){
+    ClearFrames();
+    int nextIndex = 0;
+    int steps = -1;
+    for (int i = 0; i < refpSize; i++){
+        if (nextIndex > n - 1){ //reset index
+            nextIndex = 0;
+        }
+        *(frame + nextIndex) = *(refp + i);
+        PrintStep(steps, nextIndex);
+        steps++;
+        nextIndex++;
+    }
+    return steps - 1;
 }
 
 int OptimalPageReplacement(){
