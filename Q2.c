@@ -324,6 +324,8 @@ void InputPageNumber(){     //Let user input page reference numbers as a string 
         }
     }
     else{
+        time_t t;
+        srand((unsigned) time(&t));
         for (int i = 0; i < refpSize; i++)
             *(refp + i) = rand()% (int)(ceil(refpSize / 1.5f));
     }
