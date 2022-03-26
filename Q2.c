@@ -7,7 +7,7 @@
 
 #define FRAMEMAX 6
 #define FRAMEMIN 3
-#define REFPAGEMAX 60
+#define REFPAGEMAX 30
 #define REFPAGEMIN 20
 
 int n = 0;
@@ -93,7 +93,7 @@ int main(){
 
 int FirstInFirstOut(){
     ClearFrames();
-    int nextIndex = 0;
+    int nextIndex = 0; //counter to keep track of index of frame to place reference page intp
     int steps = 1;
     for (int i = 0; i < refpSize; i++){
         int pageVal = *(refp + i);
@@ -325,7 +325,7 @@ void InputPageNumber(){     //Let user input page reference numbers as a string 
     }
     else{
         for (int i = 0; i < refpSize; i++)
-            *(refp + i) = rand()% (int)(ceil(refpSize / 2));
+            *(refp + i) = rand()% (int)(ceil(refpSize / 1.5f));
     }
 }
 
