@@ -164,6 +164,8 @@ int OptimalPageReplacement(){
                 else if (mode == -n) //if all of the current pages have no future references, we randomize
                 {
                     printf("No future references found. Choosing a random frame...\n");
+                    time_t t;
+                    srand((unsigned) time(&t));
                     frameIndex = rand() % (n - 1);
                 }
 
