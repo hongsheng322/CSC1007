@@ -16,10 +16,10 @@ int main() {
 
     //Opening driver
     printf("Opening driver...");
-    fd = open("/dev/test1", O_RDWR);  //open the driver
+    fd = open("/dev/chardev", O_RDWR);  //open the driver
     if (fd == -1)                     //if fail to open the driver (the drive is not in kernel)
     {
-        perror("open /dev/test1");
+        perror("open /dev/chardev");
         printf("Failed!\n");
         exit(EXIT_FAILURE);
     }

@@ -1,6 +1,6 @@
-// test1.c;  
-// A simple test of kernel module 
-// To compile, run makefile by entering "make"       
+// chardev.c;
+// A simple test of kernel module
+// To compile, run makefile by entering "make"
 #include <linux/kernel.h> 
 #include <linux/module.h> 
 #include <linux/fs.h>
@@ -14,7 +14,7 @@
 #include <linux/poll.h>
 #include <linux/cdev.h>
 
-#define DEVICE_NAME "test1"
+#define DEVICE_NAME "chardev"
 #define SUCCESS 0
 
 //PROTOTYPES
@@ -34,23 +34,23 @@ static struct file_operations fops = {
 };
 
 static int major;
-static int Device_Open = 0;
 static int writeCount, readCount;
 static char msg[100];
 static int sizeOfMessage;
+static int errors;
 static struct class *cls;
  
 /* This function is called when the module is loaded. */ 
-static int __init test1_init(void) 
+static int __init chardev_init(void)
 { 
        major = register_chrdev(0, DEVICE_NAME, &fops);
        if (major < 0)
        {                              
-              printk(KERN_ALERT "Test1: Module load failed\n");
+              printk(KERN_ALERT "CharDev: Module load failed\n");
               return major;
        }
-       printk(KERN_INFO "Test1: Loading Module\n"); 
-       printk(KERN_INFO "Test1: Assigned Major Number %d\n", major);
+       printk(KERN_INFO "CharDev: Loading Module\n"); 
+       printk(KERN_INFO "CharDev: Assigned Major Number %d\n", major);
        cls = class_create(THIS_MODULE, DEVICE_NAME);
        device_create(cls, NULL, MKDEV(major,0), NULL, DEVICE_NAME); //create a device driver of DEVICE_NAME with major number
        pr_info("Device created on /dev/%s\n", DEVICE_NAME);
@@ -58,18 +58,18 @@ static int __init test1_init(void)
 } 
  
 /* This function is called when the module is removed. */ 
-static void __exit test1_exit(void)  
+static void __exit chardev_exit(void)
 {  
        device_destroy(cls, MKDEV(major,0));
        class_destroy(cls);
 
        unregister_chrdev(major, DEVICE_NAME);
-       printk(KERN_INFO "Test1: Removing Module\n");
+       printk(KERN_INFO "CharDev: Removing Module\n");
 }
 
 static int dev_open(struct inode *inodep, struct file *filep)
 {
-       printk(KERN_INFO "Test1 device opened\n");
+       printk(KERN_INFO "CharDev device opened\n");
        return SUCCESS;
 }
 
@@ -77,7 +77,7 @@ static ssize_t dev_write(struct file *filep, const char *buffer,
                          size_t len, loff_t *offset)
 {
        writeCount++;
-       printk(KERN_INFO "Test1 is being written %d times\n", writeCount);
+       printk(KERN_INFO "CharDev is being written %d times\n", writeCount);
        strcpy(msg, buffer);
        printk(KERN_INFO "Message from User: %s \nNo. of char: %d\n", msg, strlen(msg));
        return SUCCESS;
@@ -85,23 +85,23 @@ static ssize_t dev_write(struct file *filep, const char *buffer,
 
 static int dev_release(struct inode *inodep, struct file *filep)
 {
-       printk(KERN_INFO "Test1 device closed\n");
+       printk(KERN_INFO "CharDev device closed\n");
        return SUCCESS;
 }
 
 static ssize_t dev_read(struct file *filep, char *buffer, size_t len, loff_t *offset)
 {
        readCount++;
-       printk(KERN_INFO "Test1 is being read %d times\n", readCount);
+       printk(KERN_INFO "CharDev is being read %d times\n", readCount);
        sizeOfMessage = strlen(msg) + 1; //include terminating null
        printk(KERN_INFO "Copying %s size of %d bytes to User Space\n", msg, sizeOfMessage);
        errors = copy_to_user(buffer, &msg, sizeOfMessage); //copy to user program the length of message
        return SUCCESS;
 }
 
-module_init(test1_init);
-module_exit(test1_exit);
+module_init(chardev_init);
+module_exit(chardev_exit);
  
-MODULE_LICENSE("GPL"); 
-MODULE_DESCRIPTION("Test1 Module"); 
-MODULE_AUTHOR("CSC1007");
+MODULE_LICENSE("GPL");
+MODULE_DESCRIPTION("CharDev Module");
+MODULE_AUTHOR("CSC1007 Group 6");
